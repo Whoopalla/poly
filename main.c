@@ -241,15 +241,15 @@ int main(void) {
     len = strlen(result);
     suff_len = strlen(current_state.suffix);
     if (current_state.searching_suffix) {
-      current_state.suffix[0] = '\0';
       strncpy(current_state.suffix, result, len - suff_len);
+      current_state.suffix[len-suff_len] = '\0';
       reverse_str(current_state.suffix);
     } else {
       strcpy(current_state.suffix, result + suff_len);
       len = strlen(current_state.suffix);
       // reverse_str(current_state.suffix);
-      //current_state.suffix[len] = 'a';
-      //current_state.suffix[len + 1] = '\0';
+      current_state.suffix[len] = 'a';
+      current_state.suffix[len + 1] = '\0';
     }
     printf("new suffix: %s\n", current_state.suffix);
     sprintf(tmp, "a %s, ", result);
