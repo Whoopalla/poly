@@ -61,7 +61,8 @@ void dump_stack(stack *st) {
   printf("Stack dump: \n");
   printf("count: %ld\n", st->count);
   for (size_t i = 0; i < st->count; i++) {
-    printf("\t [%ld] poly: %s\t suff: %s\n", i, st->items[i].poly, st->items[i].suffix);
+    printf("\t [%ld] poly: %s\t suff: %s\n", i, st->items[i].poly,
+           st->items[i].suffix);
   }
 }
 
@@ -110,7 +111,7 @@ bool search_suffix(char *suffix, FILE *f, char *result) {
 next_word:
   while (fgets(word, MAX_WORD_LENGTH, f) != NULL) {
     wl = strlen(word);
-    if (wl < 2)
+    if (wl < 2 || wl < sl)
       goto next_word;
     word[wl - 1] = '\0'; // get rid of \n
     if (sl == 0) {
@@ -119,11 +120,16 @@ next_word:
       hash_map_set(word);
       return true;
     }
-    for (w = wl - 2, s = 0; w >= 0 && s < sl; w--, s++) {
+    for (w = wl - 2, s = sl - 1; w >= 0 && s >= 0; w--, s--) {
       if (word[w] != suffix[s]) {
         goto next_word;
       }
     }
+    // for (w = wl - 2, s = 0; w >= 0 && s < sl; w--, s++) {
+    //   if (word[w] != suffix[s]) {
+    //     goto next_word;
+    //   }
+    // }
     if (hash_map_get(word))
       goto next_word;
     hash_map_set(word);
@@ -144,7 +150,7 @@ bool search_preffix(char *preffix, FILE *f, char *result) {
 next_word:
   while (fgets(word, MAX_WORD_LENGTH, f) != NULL) {
     wl = strlen(word);
-    if (wl < 2)
+    if (wl < 2 || wl < pl)
       goto next_word;
     word[wl - 1] = '\0';
     if (pl == 0) {
@@ -225,7 +231,8 @@ int main(void) {
         fprintf(stderr, "Couldn't find suffix %s\n", current_state.suffix);
         dump_stack(stack);
         current_state = stack_pop(stack);
-        printf("poly: |%s| suff: %s\n", current_state.poly, current_state.suffix);
+        printf("poly: |%s| suff: %s\n", current_state.poly,
+               current_state.suffix);
         continue;
       }
     } else {
@@ -233,23 +240,31 @@ int main(void) {
         fprintf(stderr, "Couldn't find preffix %s\n", current_state.suffix);
         dump_stack(stack);
         current_state = stack_pop(stack);
-        printf("poly: |%s| suff: %s\n", current_state.poly, current_state.suffix);
+        printf("poly: |%s| suff: %s\n", current_state.poly,
+               current_state.suffix);
         continue;
       }
     }
 
+    prev_state = current_state;
     len = strlen(result);
     suff_len = strlen(current_state.suffix);
+
     if (current_state.searching_suffix) {
       strncpy(current_state.suffix, result, len - suff_len);
-      current_state.suffix[len-suff_len] = '\0';
+      current_state.suffix[len - suff_len] = '\0';
       reverse_str(current_state.suffix);
+      len = strlen(current_state.suffix);
+      current_state.suffix[len] = 'a';
+      current_state.suffix[len + 1] = '\0';
     } else {
       strcpy(current_state.suffix, result + suff_len);
       len = strlen(current_state.suffix);
-      // reverse_str(current_state.suffix);
-      current_state.suffix[len] = 'a';
-      current_state.suffix[len + 1] = '\0';
+      reverse_str(current_state.suffix);
+      memmove(current_state.suffix + 1, current_state.suffix, len + 1);
+      current_state.suffix[0] = 'a';
+      // current_state.suffix[len] = 'a';
+      // current_state.suffix[len + 1] = '\0';
     }
     printf("new suffix: %s\n", current_state.suffix);
     sprintf(tmp, "a %s, ", result);
@@ -259,6 +274,9 @@ int main(void) {
     if (!current_state.searching_suffix) {
       current_state.insert_pos += strlen(tmp);
     }
+    // if (is_string_polindrome(current_state.poly)) {
+    //   strcpy(current_state.suffix, prev_state.suffix);
+    // }
     current_state.searching_suffix = !current_state.searching_suffix;
     printf("poly: |%s|\n", current_state.poly);
     printf("\n");
