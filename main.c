@@ -216,7 +216,7 @@ int main(void) {
   size_t len, suff_len;
   char res[MAX_WORDS_COUNT * MAX_WORD_LENGTH];
 
-  while (current_state.left_b < 300 ||
+  while (current_state.left_b < 200 ||
          !is_string_polindrome(connect_words(words, current_state.left_b,
                                              current_state.right_b, res))) {
     if (current_state.searching_suffix) {
